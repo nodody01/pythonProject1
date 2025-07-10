@@ -7,6 +7,7 @@ import pytz
 from flask_sslify import SSLify
 import barcode
 from barcode.writer import ImageWriter
+from io import BytesIO as BinaryIO
 
 
 
