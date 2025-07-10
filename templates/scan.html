@@ -73,11 +73,11 @@
 </head>
 <body>
   <h2>QR-Сканер</h2>
-  <video id="video" width="300" height="200" autoplay></video>
+  <video id="scanner" autoplay playsinline style="width:100%; max-width:400px;"></video>
   <p id="result">Ожидание сканирования...</p>
 
   <!-- СНАЧАЛА загружаем библиотеку ZXing -->
-  <script src="https://unpkg.com/ @zxing/library@latest/umd/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ @ericblade/quagga2@0.2.0/dist/quagga.min.js"></script>
 
   <!-- ЗАТЕМ подключаем наш скрипт -->
   <script src="{{ url_for('static', filename='scanner.js') }}"></script>
