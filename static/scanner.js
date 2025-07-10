@@ -19,13 +19,7 @@
 //    Quagga.start();
 //});
 
-Quagga.init(quaggaConf, function (err) {
-    if (err) {
-        return console.log("Ошибка инициализации:", err);
-    }
-    Quagga.start();
-});
-const quaggaConf = {
+Quagga.init( {
     inputStream: {
         target: document.querySelector("#camera"),
         type: "LiveStream",
@@ -37,31 +31,31 @@ const quaggaConf = {
         },
     },
     decoder: {
-        readers: ['qr_code_reader']  // Только QR-коды
+        readers: ["qr_code_reader"]  // Только QR-коды
     },
 };
 
-Quagga.onDetected(function (data) {
-    const uuid = data.codeResult.code;
-
-    // Показываем результат
-    const resultEl = document.getElementById('result');
-    resultEl.textContent = 'Сканирование...';
-
-    // Отправляем UUID на сервер
-    fetch('/api/scan', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ uuid })
-    })
-    .then(res => res.json())
-    .then(json => {
-        resultEl.textContent = json.message;
-    })
-    .catch(err => {
-        console.error(err);
-        resultEl.textContent = 'Ошибка при обработке QR-кода';
-    });
-});
+//Quagga.onDetected(function (data) {
+//    const uuid = data.codeResult.code;
+//
+//    // Показываем результат
+//    const resultEl = document.getElementById('result');
+//    resultEl.textContent = 'Сканирование...';
+//
+//    // Отправляем UUID на сервер
+//    fetch('/api/scan', {
+//        method: 'POST',
+//        headers: {
+//            'Content-Type': 'application/json'
+//        },
+//        body: JSON.stringify({ uuid })
+//    })
+//    .then(res => res.json())
+//    .then(json => {
+//        resultEl.textContent = json.message;
+//    })
+//    .catch(err => {
+//        console.error(err);
+//        resultEl.textContent = 'Ошибка при обработке QR-кода';
+//    });
+//});
