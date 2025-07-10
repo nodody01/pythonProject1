@@ -5,6 +5,10 @@ import uuid
 from datetime import datetime
 import pytz
 from flask_sslify import SSLify
+import barcode
+from barcode.writer import ImageWriter
+
+
 
 app = Flask(__name__)
 sslify = SSLify(app)
@@ -35,10 +39,16 @@ def init_db():
     conn.close()
 
 # === Генерация QR-кода ===
-def generate_qr(uuid_str):
-    qr = qrcode.make(uuid_str)
-    qr.save(f"static/qr_{uuid_str}.png")
+def generate_barcode(uuid_str):
+    # Используем формат CODE128
+    code128 = barcode.get_barcode_class('code128')
+    writer = ImageWriter()
+    barcode_obj = code128(uuid_str, writer=writer)
 
+    # Сохраняем как PNG
+    filename = f"static/barcode_{uuid_str}"
+    barcode_obj.save(filename)
+    return f"{filename}.png"
 # === Маршруты ===
 @app.route('/')
 def index():
@@ -51,25 +61,25 @@ def promoter(promoter_id):
 
     new_uuid = str(uuid.uuid4())
 
-    # Получаем текущее время в Москве и форматируем как строку
+    # Получаем текущее время в Москве
     moscow_tz = pytz.timezone('Europe/Moscow')
-    current_time_moscow = datetime.now(moscow_tz)
-    formatted_time = current_time_moscow.strftime('%Y-%m-%d %H:%M:%S')
+    current_time = datetime.now(moscow_tz).strftime('%Y-%m-%d %H:%M:%S')
 
     conn = get_db()
     c = conn.cursor()
     try:
-        # Передаем время вручную
         c.execute("INSERT INTO qr_codes (uuid, created_at, promoter_id) VALUES (?, ?, ?)",
-                  (new_uuid, formatted_time, promoter_id))
+                  (new_uuid, current_time, promoter_id))
         conn.commit()
-        generate_qr(new_uuid)
-    except sqlite3.IntegrityError:
-        return "Ошибка генерации QR-кода", 500
+
+        # Генерируем штрих-код
+        barcode_path = generate_barcode(new_uuid)
+    except sqlite3.IntegrityError as e:
+        return f"Ошибка генерации штрих-кода: {str(e)}", 500
     finally:
         conn.close()
 
-    return render_template('promoter.html', qr_uuid=new_uuid, promoter_id=promoter_id)
+    return render_template('promoter.html', barcode_url=barcode_path, promoter_id=promoter_id)
 
 @app.route('/qr/<uuid_str>.png')
 def serve_qr(uuid_str):

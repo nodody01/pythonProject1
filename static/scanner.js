@@ -10,7 +10,7 @@ const config = {
         }
     },
     decoder: {
-        readers: ["qr_code_reader"]
+        readers: ["code_128_reader"]
     }
 };
 }, function(err) {
@@ -66,37 +66,23 @@ const config = {
 //});
 
 Quagga.onDetected(function (data) {
-    console.log("Полученные данные:", data); // Посмотри в консоли
-    const uuid = data.codeResult?.code;
+    const code = data.codeResult.code;
 
-    if (!uuid) {
-        document.getElementById('result').textContent = "Ошибка: QR-код не распознан";
-        return;
-    }
+    showNotification("✅ Код распознан: " + code);
 
-    // Отправляем UUID на сервер
+    // Отправляем на сервер
     fetch('/api/scan', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ uuid })
+        body: JSON.stringify({ uuid: code })
     })
-    .then(res => {
-        if (!res.ok) {
-            throw new Error('Ошибка сети');
-        }
-        return res.json();
-    })
+    .then(res => res.json())
     .then(json => {
-        document.getElementById('result').textContent = json.message;
-    })
-    .catch(err => {
-        console.error("Ошибка отправки:", err);
-        document.getElementById('result').textContent = 'Ошибка при обработке QR-кода';
+        showNotification(json.message);
     });
 });
-
 function showNotification(message, isSuccess = null) {
     const notification = document.getElementById("notification");
     notification.textContent = message;
