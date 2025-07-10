@@ -60,3 +60,35 @@ Quagga.init({
 //        resultEl.textContent = 'Ошибка при обработке QR-кода';
 //    });
 //});
+
+Quagga.onDetected(function (data) {
+    console.log("Полученные данные:", data); // Посмотри в консоли
+    const uuid = data.codeResult?.code;
+
+    if (!uuid) {
+        document.getElementById('result').textContent = "Ошибка: QR-код не распознан";
+        return;
+    }
+
+    // Отправляем UUID на сервер
+    fetch('/api/scan', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ uuid })
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error('Ошибка сети');
+        }
+        return res.json();
+    })
+    .then(json => {
+        document.getElementById('result').textContent = json.message;
+    })
+    .catch(err => {
+        console.error("Ошибка отправки:", err);
+        document.getElementById('result').textContent = 'Ошибка при обработке QR-кода';
+    });
+});
