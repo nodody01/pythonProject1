@@ -1,0 +1,85 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="ru">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>Сканирование QR</title>-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1">-->
+<!--    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">-->
+<!--</head>-->
+<!--<body>-->
+<!--    <h2>Сканирование QR-кода</h2>-->
+
+<!--    &lt;!&ndash; Видео с камеры &ndash;&gt;-->
+<!--    <video id="scanner" autoplay playsinline style="width:100%; max-width:400px;"></video>-->
+
+<!--    &lt;!&ndash; Результат сканирования &ndash;&gt;-->
+<!--    <p id="result">Наведите камеру на QR-код</p>-->
+
+<!--    &lt;!&ndash; Подключаем QuaggaJS &ndash;&gt;-->
+<!--    <script src="https://unpkg.com/ @zxing/library@latest/umd/index.min.js"></script>-->
+
+<!--    <script>-->
+<!--        const video = document.getElementById('scanner');-->
+<!--        const result = document.getElementById('result');-->
+
+<!--        // Инициализация сканера-->
+<!--        Quagga.init({-->
+<!--    inputStream: {-->
+<!--        type: "LiveStream",-->
+<!--        target: video,-->
+<!--        constraints: {-->
+<!--            facingMode: "environment"  // Задняя камера (для мобильных)-->
+<!--        },-->
+<!--    },-->
+<!--    decoder: {-->
+<!--        readers: ["code_128_reader", "ean_reader", "upc_reader", "qr_code_reader"]-->
+<!--    }-->
+<!--}, function(err) {-->
+<!--    if (err) {-->
+<!--        console.error("Ошибка инициализации QuaggaJS:", err);-->
+<!--        result.textContent = "Ошибка камеры";-->
+<!--        return;-->
+<!--    }-->
+<!--    console.log("QuaggaJS успешно инициализирован");-->
+<!--    Quagga.start();-->
+<!--});-->
+
+<!--        // Обработка найденного QR-кода-->
+<!--        Quagga.onDetected(data => {-->
+<!--            const uuid = data.codeResult.code;-->
+
+<!--            // Показываем результат-->
+<!--            result.textContent = "Найден QR-код: " + uuid;-->
+
+<!--            // Отправляем UUID на сервер-->
+<!--            fetch('/api/scan', {-->
+<!--                method: 'POST',-->
+<!--                headers: { 'Content-Type': 'application/json' },-->
+<!--                body: JSON.stringify({ uuid })-->
+<!--            }).then(res => res.json())-->
+<!--              .then(json => {-->
+<!--                  result.textContent = json.message;-->
+<!--              });-->
+<!--        });-->
+<!--    </script>-->
+<!--</body>-->
+<!--</html>-->
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>QR Сканер</title>
+</head>
+<body>
+  <h2>QR-Сканер</h2>
+  <video id="video" width="300" height="200" autoplay></video>
+  <p id="result">Ожидание сканирования...</p>
+
+  <!-- СНАЧАЛА загружаем библиотеку ZXing -->
+  <script src="https://unpkg.com/ @zxing/library@latest/umd/index.min.js"></script>
+
+  <!-- ЗАТЕМ подключаем наш скрипт -->
+  <script src="{{ url_for('static', filename='scanner.js') }}"></script>
+</body>
+</html>

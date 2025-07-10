@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>QR от Промоутера {{ promoter_id }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2>Ваш QR-код (Промоутер {{ promoter_id }})</h2>
+    <img src="/qr/{{ qr_uuid }}.png" alt="QR Code" class="qr-image">
+    <p><a href="/qr/{{ qr_uuid }}.png" download>Скачать QR-код</a></p>
+    <p><a href="/">На главную</a></p>
+</body>
+</html>
