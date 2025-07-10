@@ -7,8 +7,11 @@ Quagga.init({
         },
     },
     decoder: {
-        readers: ["code_128_reader", "ean_reader", "upc_reader", "qr_code_reader"]
-    }
+    readers: [{
+        format: "qr_code",
+        config: {}
+    }]
+}
 }, function(err) {
     if (err) {
         console.error("Ошибка инициализации QuaggaJS:", err);
