@@ -92,3 +92,20 @@ Quagga.onDetected(function (data) {
         document.getElementById('result').textContent = 'Ошибка при обработке QR-кода';
     });
 });
+
+function showNotification(message, isSuccess = null) {
+    const notification = document.getElementById("notification");
+    notification.textContent = message;
+
+    if (isSuccess === true) notification.style.backgroundColor = "rgba(0, 128, 0, 0.9)";
+    else if (isSuccess === false) notification.style.backgroundColor = "rgba(128, 0, 0, 0.9)";
+    else notification.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+
+    notification.style.opacity = 1;
+    notification.style.pointerEvents = "auto";
+
+    setTimeout(() => {
+        notification.style.opacity = 0;
+        notification.style.pointerEvents = "none";
+    }, 3000);
+}

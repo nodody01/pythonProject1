@@ -156,8 +156,89 @@
 <!--</html>-->
 
 
+<!--fefefefefef-->
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <meta charset="utf-8"/>-->
+<!--    <title>QR Сканер</title>-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>-->
+<!--    <style>-->
+<!--        #camera video {-->
+<!--            width: 100%;-->
+<!--            max-width: 640px;-->
+<!--        }-->
+<!--        #result {-->
+<!--            font-weight: bold;-->
+<!--            margin-top: 20px;-->
+<!--            text-align: center;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+
+<!--<body>-->
+<!--<div id="camera"></div>-->
+<!--<p id="result">Наведите камеру на QR-код</p>-->
+
+<!--&lt;!&ndash; Подключение QuaggaJS &ndash;&gt;-->
+<!--<script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>-->
+
+<!--<script>-->
+<!--    const quaggaConf = {-->
+<!--        inputStream: {-->
+<!--            target: document.querySelector("#camera"),-->
+<!--            type: "LiveStream",-->
+<!--            constraints: {-->
+<!--                width: { min: 640 },-->
+<!--                height: { min: 480 },-->
+<!--                facingMode: "environment",-->
+<!--                aspectRatio: { min: 1, max: 2 }-->
+<!--            },-->
+<!--        },-->
+<!--        decoder: {-->
+<!--            readers: ['qr_code_reader']  // Только QR-коды-->
+<!--        },-->
+<!--    };-->
+
+<!--    Quagga.init(quaggaConf, function (err) {-->
+<!--        if (err) {-->
+<!--            return console.log("Ошибка инициализации:", err);-->
+<!--        }-->
+<!--        Quagga.start();-->
+<!--    });-->
+
+<!--    Quagga.onDetected(function (data) {-->
+<!--        const uuid = data.codeResult.code;-->
+
+<!--        // Показываем результат-->
+<!--        const resultEl = document.getElementById('result');-->
+<!--        resultEl.textContent = 'Сканирование...';-->
+
+<!--        // Отправляем UUID на сервер-->
+<!--        fetch('/api/scan', {-->
+<!--            method: 'POST',-->
+<!--            headers: {-->
+<!--                'Content-Type': 'application/json'-->
+<!--            },-->
+<!--            body: JSON.stringify({ uuid })-->
+<!--        })-->
+<!--        .then(res => res.json())-->
+<!--        .then(json => {-->
+<!--            resultEl.textContent = json.message;-->
+<!--        })-->
+<!--        .catch(err => {-->
+<!--            console.error(err);-->
+<!--            resultEl.textContent = 'Ошибка при обработке QR-кода';-->
+<!--        });-->
+<!--    });-->
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->
+
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="utf-8"/>
     <title>QR Сканер</title>
@@ -166,54 +247,84 @@
         #camera video {
             width: 100%;
             max-width: 640px;
+            display: block;
+            margin: 0 auto;
         }
+
         #result {
             font-weight: bold;
             margin-top: 20px;
             text-align: center;
         }
+
+        /* Стили для модального окна */
+        #notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+            font-size: 1.2em;
+        }
     </style>
 </head>
 
 <body>
-<div id="camera"></div>
+<div id="camera">
+    <video autoplay playsinline></video>
+</div>
 <p id="result">Наведите камеру на QR-код</p>
 
+<!-- Popup-уведомление -->
+<div id="notification"></div>
+
 <!-- Подключение QuaggaJS -->
-<script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ @ericblade/quagga2/dist/quagga.min.js"></script>
 
 <script>
     const quaggaConf = {
         inputStream: {
-            target: document.querySelector("#camera"),
+            target: document.querySelector("#camera video"),
             type: "LiveStream",
             constraints: {
                 width: { min: 640 },
                 height: { min: 480 },
-                facingMode: "environment",
-                aspectRatio: { min: 1, max: 2 }
+                facingMode: "environment"
             },
         },
         decoder: {
-            readers: ['qr_code_reader']  // Только QR-коды
-        },
+            readers: ["qr_code_reader"]
+        }
     };
 
     Quagga.init(quaggaConf, function (err) {
         if (err) {
-            return console.log("Ошибка инициализации:", err);
+            console.error("Ошибка инициализации Quagga:", err);
+            document.getElementById('result').textContent = "Ошибка камеры";
+            return;
         }
+        console.log("Quagga успешно инициализирован");
         Quagga.start();
     });
 
     Quagga.onDetected(function (data) {
-        const uuid = data.codeResult.code;
+        const uuid = data.codeResult?.code;
 
-        // Показываем результат
-        const resultEl = document.getElementById('result');
-        resultEl.textContent = 'Сканирование...';
+        if (!uuid) {
+            console.warn("UUID не найден");
+            return;
+        }
 
-        // Отправляем UUID на сервер
+        // Показываем временное сообщение
+        showNotification("Сканирование...");
+
         fetch('/api/scan', {
             method: 'POST',
             headers: {
@@ -221,15 +332,43 @@
             },
             body: JSON.stringify({ uuid })
         })
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error('Ошибка сети');
+            return res.json();
+        })
         .then(json => {
-            resultEl.textContent = json.message;
+            if (json.status === 'success') {
+                showNotification("✅ QR-код активирован", true);
+            } else {
+                showNotification("❌ Уже использован или не существует", false);
+            }
         })
         .catch(err => {
-            console.error(err);
-            resultEl.textContent = 'Ошибка при обработке QR-кода';
+            console.error("Ошибка отправки:", err);
+            showNotification("⚠️ Ошибка при сканировании", false);
         });
     });
+
+    // Функция показывает уведомление поверх видео
+    function showNotification(message, isSuccess = null) {
+        const notification = document.getElementById("notification");
+
+        notification.textContent = message;
+
+        // Цвет фона в зависимости от результата
+        if (isSuccess === true) notification.style.backgroundColor = "rgba(0, 128, 0, 0.9)";
+        else if (isSuccess === false) notification.style.backgroundColor = "rgba(128, 0, 0, 0.9)";
+        else notification.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+
+        notification.style.opacity = 1;
+        notification.style.pointerEvents = "auto";
+
+        // Скрываем через 3 секунды
+        setTimeout(() => {
+            notification.style.opacity = 0;
+            notification.style.pointerEvents = "none";
+        }, 3000);
+    }
 </script>
 </body>
 </html>
