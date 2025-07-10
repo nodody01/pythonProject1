@@ -1,17 +1,18 @@
 Quagga.init({
+const config = {
     inputStream: {
         type: "LiveStream",
-        target: video,
+        target: document.querySelector('#camera video'),
         constraints: {
+            width: { min: 640 },
+            height: { min: 480 },
             facingMode: "environment"
-        },
+        }
     },
     decoder: {
-    readers: [{
-        format: "qr_code",
-        config: {}
-    }]
-}
+        readers: ["qr_code_reader"]
+    }
+};
 }, function(err) {
     if (err) {
         console.error("Ошибка инициализации QuaggaJS:", err);
