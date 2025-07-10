@@ -79,6 +79,30 @@ def serve_qr(uuid_str):
 def scan_page():
     return render_template('scan.html')
 
+# @app.route('/api/scan', methods=['POST'])
+# def scan_qr():
+#     data = request.json
+#     qr_uuid = data.get('uuid')
+#
+#     conn = get_db()
+#     c = conn.cursor()
+#
+#     # Проверяем, есть ли такой QR и не использован ли он
+#     c.execute("SELECT * FROM qr_codes WHERE uuid=? AND used=0", (qr_uuid,))
+#     result = c.fetchone()
+#
+#     if result:
+#         promoter_id = result[4]
+#         # Переносим в used_qr_codes и помечаем как использованный
+#         c.execute("INSERT INTO used_qr_codes (qr_uuid, promoter_id) VALUES (?, ?)", (qr_uuid, promoter_id))
+#         c.execute("UPDATE qr_codes SET used=1 WHERE uuid=?", (qr_uuid,))
+#         conn.commit()
+#         conn.close()
+#         return jsonify({"status": "success", "message": "QR-код активирован!"})
+#     else:
+#         conn.close()
+#         return jsonify({"status": "error", "message": "QR-код уже был использован или не существует."})
+
 @app.route('/api/scan', methods=['POST'])
 def scan_qr():
     data = request.json
@@ -102,7 +126,6 @@ def scan_qr():
     else:
         conn.close()
         return jsonify({"status": "error", "message": "QR-код уже был использован или не существует."})
-
 
 
 @app.route('/test-time')

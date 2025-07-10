@@ -86,23 +86,82 @@
 
 
 
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <meta charset="utf-8"/>-->
+<!--    <title>QuaggaJS</title>-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>-->
+<!--    <style>-->
+<!--        #camera video{-->
+<!--            width:100%;-->
+<!--            max-width: 640px;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+
+<!--<body>-->
+<!--<div id="camera" style="width:100%"></div>-->
+<!--<script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>-->
+<!--<script>-->
+<!--    const quaggaConf = {-->
+<!--        inputStream: {-->
+<!--            target: document.querySelector("#camera"),-->
+<!--            type: "LiveStream",-->
+<!--            constraints: {-->
+<!--                width: { min: 640 },-->
+<!--                height: { min: 480 },-->
+<!--                facingMode: "environment",-->
+<!--                aspectRatio: { min: 1, max: 2 }-->
+<!--            }-->
+<!--        },-->
+<!--        decoder: {-->
+<!--            readers: ['code_128_reader']-->
+<!--        },-->
+<!--    }-->
+
+<!--    Quagga.init(quaggaConf, function (err) {-->
+<!--        if (err) {-->
+<!--            return console.log(err);-->
+<!--        }-->
+<!--        Quagga.start();-->
+<!--    });-->
+
+<!--    Quagga.onDetected(function (result) {-->
+<!--        alert("Detected barcode: " + result.codeResult.code);-->
+<!--    });-->
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
-    <title>QuaggaJS</title>
+    <title>QR Сканер</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
     <style>
-        #camera video{
-            width:100%;
+        #camera video {
+            width: 100%;
             max-width: 640px;
+        }
+        #result {
+            font-weight: bold;
+            margin-top: 20px;
+            text-align: center;
         }
     </style>
 </head>
 
 <body>
-<div id="camera" style="width:100%"></div>
-<script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
+<div id="camera"></div>
+<p id="result">Наведите камеру на QR-код</p>
+
+<!-- Подключение QuaggaJS -->
+<script src="https://cdn.jsdelivr.net/npm/ @ericblade/quagga2@0.2.0/dist/quagga.min.js"></script>
+
 <script>
     const quaggaConf = {
         inputStream: {
@@ -113,22 +172,43 @@
                 height: { min: 480 },
                 facingMode: "environment",
                 aspectRatio: { min: 1, max: 2 }
-            }
+            },
         },
         decoder: {
-            readers: ['code_128_reader']
+            readers: ['qr_code_reader']  // Только QR-коды
         },
-    }
+    };
 
     Quagga.init(quaggaConf, function (err) {
         if (err) {
-            return console.log(err);
+            return console.log("Ошибка инициализации:", err);
         }
         Quagga.start();
     });
 
-    Quagga.onDetected(function (result) {
-        alert("Detected barcode: " + result.codeResult.code);
+    Quagga.onDetected(function (data) {
+        const uuid = data.codeResult.code;
+
+        // Показываем результат
+        const resultEl = document.getElementById('result');
+        resultEl.textContent = 'Сканирование...';
+
+        // Отправляем UUID на сервер
+        fetch('/api/scan', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ uuid })
+        })
+        .then(res => res.json())
+        .then(json => {
+            resultEl.textContent = json.message;
+        })
+        .catch(err => {
+            console.error(err);
+            resultEl.textContent = 'Ошибка при обработке QR-кода';
+        });
     });
 </script>
 </body>
