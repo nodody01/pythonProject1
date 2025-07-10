@@ -65,21 +65,71 @@
 <!--</body>-->
 <!--</html>-->
 
+<!--<!DOCTYPE html>-->
+<!--<html lang="ru">-->
+<!--<head>-->
+<!--  <meta charset="UTF-8">-->
+<!--  <title>QR Сканер</title>-->
+<!--</head>-->
+<!--<body>-->
+<!--  <h2>QR-Сканер</h2>-->
+<!--  <video id="scanner" autoplay playsinline style="width:100%; max-width:400px;"></video>-->
+<!--  <p id="result">Ожидание сканирования...</p>-->
+
+<!--  &lt;!&ndash; СНАЧАЛА загружаем библиотеку ZXing &ndash;&gt;-->
+<!--  <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga/dist/quagga.min.js"></script>-->
+
+<!--  &lt;!&ndash; ЗАТЕМ подключаем наш скрипт &ndash;&gt;-->
+<!--  <script src="{{ url_for('static', filename='scanner.js') }}"></script>-->
+<!--</body>-->
+<!--</html>-->
+
+
+
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>QR Сканер</title>
+    <meta charset="utf-8"/>
+    <title>QuaggaJS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <style>
+        #camera video{
+            width:100%;
+            max-width: 640px;
+        }
+    </style>
 </head>
+
 <body>
-  <h2>QR-Сканер</h2>
-  <video id="scanner" autoplay playsinline style="width:100%; max-width:400px;"></video>
-  <p id="result">Ожидание сканирования...</p>
+<div id="camera" style="width:100%"></div>
+<script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
+<script>
+    const quaggaConf = {
+        inputStream: {
+            target: document.querySelector("#camera"),
+            type: "LiveStream",
+            constraints: {
+                width: { min: 640 },
+                height: { min: 480 },
+                facingMode: "environment",
+                aspectRatio: { min: 1, max: 2 }
+            }
+        },
+        decoder: {
+            readers: ['code_128_reader']
+        },
+    }
 
-  <!-- СНАЧАЛА загружаем библиотеку ZXing -->
-  <script src="https://cdn.jsdelivr.net/npm/ @ericblade/quagga2@0.2.0/dist/quagga.min.js"></script>
+    Quagga.init(quaggaConf, function (err) {
+        if (err) {
+            return console.log(err);
+        }
+        Quagga.start();
+    });
 
-  <!-- ЗАТЕМ подключаем наш скрипт -->
-  <script src="{{ url_for('static', filename='scanner.js') }}"></script>
+    Quagga.onDetected(function (result) {
+        alert("Detected barcode: " + result.codeResult.code);
+    });
+</script>
 </body>
 </html>
